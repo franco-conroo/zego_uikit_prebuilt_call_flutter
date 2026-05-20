@@ -1,4 +1,26 @@
-## 4.23
+## 4.24.1
+
+- Bugs
+    - Fixed the issue where the offline pop-up window on the called end did not automatically disappear after the offline call was canceled by the called end
+
+## 4.24.0
+
+- Features
+
+    - Added inviter timeout detection feature with `ZegoCallRequiredInviterConfig`, supporting configuration of detection rules for one-on-one/group calls. If the inviter has not joined
+      after [detectSeconds] after entering the call, the call will be ended with `ZegoCallEndReason.abandoned`.
+
+## 4.23.2/4.23.3
+
+- Bugs
+    - When clicking the icon to activate the application, the offline incoming call pop-up window will automatically close.
+
+## 4.23.1
+
+- Bugs
+    - Fixed the issue where the second call is automatically hung up after enable `ZegoCallNoResponseEndConfig.enabled` .
+
+## 4.23.0
 
 - Features
     - Automatically ending a call when there is no response in call in `ZegoCallNoResponseEndConfig.timeoutSeconds` seconds, default is disabled.

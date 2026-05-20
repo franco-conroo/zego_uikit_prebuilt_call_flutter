@@ -141,6 +141,9 @@ class _ZegoUIKitPrebuiltCallState extends State<ZegoUIKitPrebuiltCall>
   /// No response auto-end timer, automatically exits the call when SDK's onRoomUserUpdate.delete and onRoomStreamUpdate.delete are not sent
   Timer? noResponseEndTimer;
 
+  /// Flag to prevent multiple triggers of end call logic
+  bool _isEndingCall = false;
+
   final popUpManager = ZegoCallPopUpManager();
 
   // Proximity sensor related variables
@@ -501,7 +504,11 @@ class _ZegoUIKitPrebuiltCallState extends State<ZegoUIKitPrebuiltCall>
     final deletedStreamUsersInCache =
         await ZegoUIKit().getDeletedStreamUserIDs(widget.callID);
     final leavedRoomUsers = {
-      for (final user in [...leavedRoomUsersInMemory, ...leavedRoomUsersInCache, ...deletedStreamUsersInCache])
+      for (final user in [
+        ...leavedRoomUsersInMemory,
+        ...leavedRoomUsersInCache,
+        ...deletedStreamUsersInCache
+      ])
         user.id: user
     }.values.toList();
 
@@ -530,8 +537,20 @@ class _ZegoUIKitPrebuiltCallState extends State<ZegoUIKitPrebuiltCall>
       (member) => leavedRoomUsers.any((leaved) => leaved.id == member.id),
     );
 
+    ZegoLoggerService.logInfo(
+      'otherMembersInCall:${otherMembersInCall.map((e) => e.toShortString())}, '
+      'leavedRoomUsers:${leavedRoomUsers.map((e) => e.toShortString())}, '
+      'inviter:${inviter.toShortString()}, '
+      'invitees:${invitees.map((e) => e.toShortString())}, '
+      'localUser:${localUser.toShortString()}, '
+      'leavedRoomUsersInMemory:${leavedRoomUsersInMemory.map((e) => e.toShortString())}, '
+      'leavedRoomUsersInCache:${leavedRoomUsersInCache.map((e) => e.toShortString())}, '
+      'deletedStreamUsersInCache:${deletedStreamUsersInCache.map((e) => e.toShortString())}, ',
+      tag: 'call',
+      subTag: 'prebuilt, checkInvitationParticipant',
+    );
     if (allOtherMembersInCallLeft) {
-      ZegoLoggerService.logInfo(
+      ZegoLoggerService.logWarn(
         'all other members in call have left the room, ending call',
         tag: 'call',
         subTag: 'prebuilt, checkInvitationParticipant',
@@ -544,16 +563,7 @@ class _ZegoUIKitPrebuiltCallState extends State<ZegoUIKitPrebuiltCall>
       endCallIfOnlyLocalUser();
     } else {
       ZegoLoggerService.logInfo(
-        'some other members are still in the room, '
-        'otherMembersInCall:${otherMembersInCall.map((e) => e.toShortString())}, '
-        'leavedRoomUsers:${leavedRoomUsers.map((e) => e.toShortString())}, '
-        '\n---'
-        'inviter:${inviter.toShortString()}, '
-        'invitees:${invitees.map((e) => e.toShortString())}, '
-        'localUser:${localUser.toShortString()}, '
-        'leavedRoomUsersInMemory:${leavedRoomUsersInMemory.map((e) => e.toShortString())}, '
-        'leavedRoomUsersInCache:${leavedRoomUsersInCache.map((e) => e.toShortString())}, '
-        'deletedStreamUsersInCache:${deletedStreamUsersInCache.map((e) => e.toShortString())}, ',
+        'some other members are still in the room, ',
         tag: 'call',
         subTag: 'prebuilt, checkInvitationParticipant',
       );
@@ -579,6 +589,12 @@ class _ZegoUIKitPrebuiltCallState extends State<ZegoUIKitPrebuiltCall>
     if (isChecking) {
       updateRequiredUsersEnteredStatus();
       if (!isRequiredUserAllEntered) {
+        ZegoLoggerService.logWarn(
+          'requiredUsers not all entered, '
+          'hangUpIfRequiredUsersNotAllEntered in ${widget.config.user.requiredUsers.detectSeconds} seconds',
+          tag: 'call',
+          subTag: 'prebuilt, checkRequiredParticipant',
+        );
         Timer(
           Duration(
             seconds: widget.config.user.requiredUsers.detectSeconds,
@@ -1145,7 +1161,7 @@ class _ZegoUIKitPrebuiltCallState extends State<ZegoUIKitPrebuiltCall>
     }
 
     /// only local user in call
-    ZegoLoggerService.logInfo(
+    ZegoLoggerService.logWarn(
       'only local user in call, ',
       tag: 'call',
       subTag: 'prebuilt',
@@ -1762,6 +1778,17 @@ class _ZegoUIKitPrebuiltCallState extends State<ZegoUIKitPrebuiltCall>
   void defaultEndAction(
     ZegoCallEndEvent event,
   ) {
+    /// Prevent multiple triggers of end call logic
+    if (_isEndingCall) {
+      ZegoLoggerService.logInfo(
+        'already ending call, skip defaultEndAction',
+        tag: 'call',
+        subTag: 'prebuilt',
+      );
+      return;
+    }
+    _isEndingCall = true;
+
     ZegoLoggerService.logInfo(
       'default call end event, event:$event',
       tag: 'call',
@@ -1797,6 +1824,11 @@ class _ZegoUIKitPrebuiltCallState extends State<ZegoUIKitPrebuiltCall>
 
   void updateRequiredUsersEnteredStatus() {
     if (widget.config.user.requiredUsers.users.isEmpty) {
+      ZegoLoggerService.logInfo(
+        'no requiredUsers, skip updateRequiredUsersEnteredStatus',
+        tag: 'call',
+        subTag: 'prebuilt, checkRequiredParticipant',
+      );
       return;
     }
 
@@ -1808,6 +1840,11 @@ class _ZegoUIKitPrebuiltCallState extends State<ZegoUIKitPrebuiltCall>
           remoteUsers.indexWhere((user) => user.id == requiredParticipant.id);
       requiredUsersEnteredStatus[requiredParticipant.id] = -1 != index;
     }
+    ZegoLoggerService.logInfo(
+      'requiredUsersEnteredStatus:$requiredUsersEnteredStatus',
+      tag: 'call',
+      subTag: 'prebuilt, checkRequiredParticipant',
+    );
   }
 
   void hangUpIfRequiredUsersNotAllEntered() {
@@ -1817,7 +1854,7 @@ class _ZegoUIKitPrebuiltCallState extends State<ZegoUIKitPrebuiltCall>
       ZegoLoggerService.logWarn(
         'not all requiredUsers entered($requiredUsersEnteredStatus), call end.',
         tag: 'call',
-        subTag: 'prebuilt',
+        subTag: 'prebuilt, checkRequiredParticipant',
       );
 
       ZegoUIKitPrebuiltCallController().hangUp(
@@ -1829,7 +1866,7 @@ class _ZegoUIKitPrebuiltCallState extends State<ZegoUIKitPrebuiltCall>
       ZegoLoggerService.logInfo(
         'all requiredUsers entered($requiredUsersEnteredStatus)',
         tag: 'call',
-        subTag: 'prebuilt',
+        subTag: 'prebuilt, checkRequiredParticipant',
       );
     }
   }

@@ -72,6 +72,8 @@ class ZegoUIKitPrebuiltCallConfig {
   /// If you want to join the call with your camera closed, set this value to false;
   /// if you want to join the call with your camera open, set this value to true.
   /// The default value is `true`.
+  ///
+  /// Note: This setting will be overridden by [ZegoInvitationConfig.defaultCameraOn] when in call invitation scenario.
   bool turnOnCameraWhenJoining;
 
   /// Whether to use the front camera when joining the call.
@@ -84,11 +86,15 @@ class ZegoUIKitPrebuiltCallConfig {
   /// If you want to join the call with your microphone closed, set this value to false;
   /// if you want to join the call with your microphone open, set this value to true.
   /// The default value is `true`.
+  ///
+  /// Note: This setting will be overridden by [ZegoInvitationConfig.defaultMicrophoneOn] when in call invitation scenario.
   bool turnOnMicrophoneWhenJoining;
 
   /// Whether to use the speaker to play audio when joining the call.
   /// The default value is `false`, but it will be set to `true` if the user is in a group call or video call.
   /// If this value is set to `false`, the system's default playback device, such as the earpiece or Bluetooth headset, will be used for audio playback.
+  ///
+  /// Note: This setting will be overridden by [ZegoInvitationConfig.defaultSpeakerOn] when in call invitation scenario.
   bool useSpeakerWhenJoining;
 
   /// Layout-related configuration. You can choose your layout here.
@@ -907,6 +913,13 @@ class ZegoCallUserConfig {
 
   /// necessary user in the call.
   ZegoCallRequiredUserConfig requiredUsers;
+
+  @override
+  String toString() {
+    return '{'
+        'requiredUsers:$requiredUsers, '
+        '}';
+  }
 }
 
 class ZegoCallDeviceConfig {
@@ -927,13 +940,13 @@ class ZegoCallDeviceConfig {
 /// Necessary participants to participate in the call.
 ///
 /// If the participant have not joined after
-/// [requiredParticipantCheckTimeoutSeconds] after entering the call,
+/// [detectSeconds] after entering the call,
 /// the call will be triggered [ZegoUIKitPrebuiltCallEvents.onCallEnd] with [ZegoCallEndReason.abandoned]
 class ZegoCallRequiredUserConfig {
   ZegoCallRequiredUserConfig({
     this.users = const [],
     this.detectSeconds = 5,
-    this.detectInDebugMode = false,
+    this.detectInDebugMode = true,
     this.enabled = false,
   });
 
