@@ -445,26 +445,12 @@ class ZegoUIKitPrebuiltCallInvitationService
           subTag: 'service(${identityHashCode(this)}), init',
         );
 
-        if (notificationConfig?.androidNotificationConfig?.showOnFullScreen ??
-            true) {
-          if (Platform.isAndroid) {
-            final mobileSystemVersion = ZegoUIKit().getMobileSystemVersionX();
-            ZegoLoggerService.logInfo(
-              'mobile system version:$mobileSystemVersion',
-              tag: 'call-invitation',
-              subTag: 'service(${identityHashCode(this)}), init',
-            );
-
-            if (mobileSystemVersion.major >= 14) {
-              FlutterCallkitIncoming.requestFullIntentPermission().then((res) {
-                ZegoLoggerService.logInfo(
-                  'requestFullIntentPermission done, res:$res',
-                  tag: 'call-invitation',
-                  subTag: 'callkit',
-                );
-              });
-            }
-          }
+        if (!Platform.isAndroid &&
+            (notificationConfig?.androidNotificationConfig?.showOnFullScreen ??
+                true)) {
+          /// USE_FULL_SCREEN_INTENT is no longer needed on Android —
+          /// ConnectionService handles lock-screen display without it.
+          /// Keep this block for iOS future-proofing only.
         }
       });
     } catch (e) {

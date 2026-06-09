@@ -1,3 +1,6 @@
+// Dart imports:
+import 'dart:io' show Platform;
+
 // Package imports:
 import 'package:flutter_callkit_incoming/entities/android_params.dart';
 import 'package:flutter_callkit_incoming/entities/call_kit_params.dart';
@@ -9,6 +12,7 @@ import 'package:uuid/uuid.dart';
 import 'package:zego_uikit/zego_uikit.dart';
 
 // Project imports:
+import 'package:zego_uikit_prebuilt_call/src/channel/platform_interface.dart';
 import 'package:zego_uikit_prebuilt_call/src/invitation/callkit/defines.dart';
 import 'package:zego_uikit_prebuilt_call/src/invitation/defines.dart';
 
@@ -81,10 +85,6 @@ Future<CallKitParams> _makeCallKitParam({
     //  callkit type: 0 - Audio Call, 1 - Video Call
     type: callType.index,
     duration: timeoutSeconds * 1000,
-    textAccept: prefs.getString(CallKitInnerVariable.textAccept.cacheKey) ??
-        CallKitInnerVariable.textAccept.defaultValue,
-    textDecline: prefs.getString(CallKitInnerVariable.textDecline.cacheKey) ??
-        CallKitInnerVariable.textDecline.defaultValue,
     extra: <String, dynamic>{},
     headers: <String, dynamic>{},
     missedCallNotification: NotificationParams(
@@ -101,6 +101,10 @@ Future<CallKitParams> _makeCallKitParam({
       isShowFullLockedScreen: isShowFullLockedScreen,
       isShowLogo: false,
       ringtonePath: tempRingtonePath,
+      textAccept: prefs.getString(CallKitInnerVariable.textAccept.cacheKey) ??
+          CallKitInnerVariable.textAccept.defaultValue,
+      textDecline: prefs.getString(CallKitInnerVariable.textDecline.cacheKey) ??
+          CallKitInnerVariable.textDecline.defaultValue,
       backgroundColor:
           prefs.getString(CallKitInnerVariable.backgroundColor.cacheKey) ??
               CallKitInnerVariable.backgroundColor.defaultValue,
@@ -177,7 +181,7 @@ Future<void> showCallkitIncoming({
 
 /// @nodoc
 ///
-/// Clear the call cache of a third-party CallKit.
+/// Clear the active call UI — Android uses ConnectionService path, iOS uses CallKit.
 Future<void> clearAllCallKitCalls() async {
   ZegoLoggerService.logInfo(
     'clear all callKit calls',
@@ -185,5 +189,8 @@ Future<void> clearAllCallKitCalls() async {
     subTag: 'callkit',
   );
 
+  if (Platform.isAndroid) {
+    return ZegoCallPluginPlatform.instance.endVoipCall();
+  }
   return FlutterCallkitIncoming.endAllCalls();
 }

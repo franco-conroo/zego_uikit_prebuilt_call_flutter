@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="#FF1A1A1A"
+    android:padding="32dp">
+
+    <TextView
+        android:id="@+id/tvCallerName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#FFFFFFFF"
+        android:textSize="28sp"
+        android:layout_marginBottom="8dp"
+        tools:text="Caller Name" />
+
+    <TextView
+        android:id="@+id/tvCallType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#FFAAAAAA"
+        android:textSize="16sp"
+        android:layout_marginBottom="64dp"
+        tools:text="Incoming call" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:weightSum="2">
+
+        <LinearLayout
+            android:id="@+id/llRejectBtn"
+            android:layout_width="0dp"
+            android:layout_height="72dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:background="@drawable/rounded_button_decline"
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="horizontal"
+            android:layout_marginEnd="16dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:src="@drawable/ic_decline"
+                android:tint="@android:color/white"
+                app:tint="@android:color/white"
+                tools:ignore="UseAppTint" />
+
+            <TextView
+                android:id="@+id/tvRejectBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/white"
+                android:textAllCaps="false"
+                tools:text="Decline" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/llAcceptBtn"
+            android:layout_width="0dp"
+            android:layout_height="72dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:background="@drawable/rounded_button_accept"
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="horizontal"
+            android:layout_marginStart="16dp">
+
+            <ImageView
+                android:id="@+id/ivAcceptIcon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:src="@drawable/ic_audio_accept"
+                android:tint="@android:color/white"
+                app:tint="@android:color/white"
+                tools:ignore="UseAppTint" />
+
+            <TextView
+                android:id="@+id/tvAcceptBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/white"
+                android:textAllCaps="false"
+                tools:text="Accept" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

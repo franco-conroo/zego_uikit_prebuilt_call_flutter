@@ -575,22 +575,6 @@ class ZegoCallInvitationServicePrivateImpl
   }
 
   void _registerOfflineCallIsolateNameServer() {
-    if (flutterCallkitIncomingStreamSubscription != null) {
-      /// Here we need to clear the status of background isolate and subscription.
-      /// The problem occurs when an offline call is received, but the user
-      /// directly clicks the appIcon to open the application. mainIsolate will create the zim,
-      /// and fcmIsolate will accidentally destroy the zim.
-      ZegoLoggerService.logInfo(
-        'cancel The flutterCallkitIncomingStreamSubscription or not:'
-        '(${flutterCallkitIncomingStreamSubscription?.hashCode})',
-        tag: 'call-invitation',
-        subTag: 'service private(${identityHashCode(this)}), isolate',
-      );
-
-      flutterCallkitIncomingStreamSubscription?.cancel();
-      flutterCallkitIncomingStreamSubscription = null;
-    }
-
     final lookupIsolate =
         IsolateNameServer.lookupPortByName(backgroundMessageIsolatePortName);
     final isMainIsolatePort =
@@ -1044,7 +1028,10 @@ class ZegoCallInvitationServicePrivateImpl
   }
 
   Future<bool> requestSystemAlertWindowPermissionImpl() async {
-    /// for bring app to foreground from background in Android 10
+    if (Platform.isAndroid) {
+      /// ConnectionService replaces the SAW workaround on Android
+      return true;
+    }
     return await requestPermission(Permission.systemAlertWindow)
         .then((bool hasPermission) {
       ZegoLoggerService.logInfo(

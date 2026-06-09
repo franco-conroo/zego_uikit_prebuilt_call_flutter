@@ -13,7 +13,6 @@ import 'package:zego_uikit/zego_uikit.dart';
 // Project imports:
 import 'package:zego_uikit_prebuilt_call/src/internal/reporter.dart';
 import 'package:zego_uikit_prebuilt_call/src/invitation/callkit/android/defines.dart';
-import 'package:zego_uikit_prebuilt_call/src/invitation/callkit/android/entry_point.dart';
 import 'package:zego_uikit_prebuilt_call/src/invitation/callkit/android/handler.call.dart';
 import 'package:zego_uikit_prebuilt_call/src/invitation/callkit/android/handler.im.dart';
 import 'package:zego_uikit_prebuilt_call/src/invitation/internal/isolate_name_server_guard.dart';
@@ -138,14 +137,6 @@ class ZegoCallAndroidBackgroundMessageHandler {
         tag: 'call-invitation',
         subTag: 'offline, isolate(${_listeningIsolatePort?.toStringX()})',
       );
-
-      ZegoLoggerService.logInfo(
-        'cancel the flutterCallkitIncomingStreamSubscription(${flutterCallkitIncomingStreamSubscription?.hashCode})',
-        tag: 'call-invitation',
-        subTag: 'offline, isolate(${_listeningIsolatePort?.toStringX()})',
-      );
-      flutterCallkitIncomingStreamSubscription?.cancel();
-      flutterCallkitIncomingStreamSubscription = null;
 
       _listeningIsolatePort?.close();
       _listeningIsolatePort = null;

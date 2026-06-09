@@ -11,6 +11,8 @@ import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Build;
+import android.os.Bundle;
+import android.telecom.TelecomManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -25,6 +27,8 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 
 import com.zegocloud.uikit.call_plugin.notification.PluginNotification;
+import com.zegocloud.uikit.call_plugin.voip.PhoneAccountHelper;
+import com.zegocloud.uikit.call_plugin.voip.VoipConnectionService;
 import com.zegocloud.uikit.call_plugin.Defines;
 
 
@@ -59,6 +63,7 @@ public class ZegoUIKitCallPlugin extends BroadcastReceiver implements FlutterPlu
         audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 
         registerBroadcastReceiver();
+        PhoneAccountHelper.registerPhoneAccount(context);
 
         Log.d(TAG, "Android VERSION.RELEASE: " + Build.VERSION.RELEASE);
         Log.d(TAG, "Android VERSION.SDK_INT: " + Build.VERSION.SDK_INT);
@@ -112,6 +117,12 @@ public class ZegoUIKitCallPlugin extends BroadcastReceiver implements FlutterPlu
                     break;
                 case Defines.FLUTTER_API_FUNC_DISMISS_ALL_NOTIFICATIONS:
                     handleDismissAllNotifications(result);
+                    break;
+                case Defines.FLUTTER_API_FUNC_ADD_NEW_INCOMING_CALL:
+                    handleAddNewIncomingCall(call, result);
+                    break;
+                case Defines.FLUTTER_API_FUNC_END_VOIP_CALL:
+                    handleEndVoipCall(result);
                     break;
                 case "startMonitoringAudioRoute":
                     handleStartMonitoringAudioRoute(result);
@@ -198,6 +209,75 @@ public class ZegoUIKitCallPlugin extends BroadcastReceiver implements FlutterPlu
         result.success(null);
     }
 
+    private void handleAddNewIncomingCall(MethodCall call, Result result) {
+        try {
+            TelecomManager telecomManager = (TelecomManager) context.getSystemService(Context.TELECOM_SERVICE);
+            if (telecomManager == null) {
+                result.error(Defines.ERROR_UNKNOWN, "TelecomManager unavailable", null);
+                return;
+            }
+
+            Bundle extras = new Bundle();
+            extras.putString(Defines.FLUTTER_PARAM_TITLE, call.argument(Defines.FLUTTER_PARAM_TITLE));
+            extras.putString(Defines.FLUTTER_PARAM_CONTENT, call.argument(Defines.FLUTTER_PARAM_CONTENT));
+            extras.putString(Defines.FLUTTER_PARAM_CHANNEL_ID,
+                    call.argument(Defines.FLUTTER_PARAM_CHANNEL_ID) != null
+                            ? (String) call.argument(Defines.FLUTTER_PARAM_CHANNEL_ID)
+                            : Defines.DEFAULT_CHANNEL_ID);
+            extras.putString(Defines.FLUTTER_PARAM_SOUND_SOURCE,
+                    call.argument(Defines.FLUTTER_PARAM_SOUND_SOURCE) != null
+                            ? (String) call.argument(Defines.FLUTTER_PARAM_SOUND_SOURCE) : "");
+            extras.putString(Defines.FLUTTER_PARAM_ICON_SOURCE,
+                    call.argument(Defines.FLUTTER_PARAM_ICON_SOURCE) != null
+                            ? (String) call.argument(Defines.FLUTTER_PARAM_ICON_SOURCE) : "");
+            extras.putString(Defines.FLUTTER_PARAM_ID,
+                    call.argument(Defines.FLUTTER_PARAM_ID) != null
+                            ? (String) call.argument(Defines.FLUTTER_PARAM_ID) : "1");
+            extras.putString(Defines.FLUTTER_PARAM_ACCEPT_BUTTON_TEXT,
+                    call.argument(Defines.FLUTTER_PARAM_ACCEPT_BUTTON_TEXT) != null
+                            ? (String) call.argument(Defines.FLUTTER_PARAM_ACCEPT_BUTTON_TEXT)
+                            : Defines.DEFAULT_ACCEPT_TEXT);
+            extras.putString(Defines.FLUTTER_PARAM_REJECT_BUTTON_TEXT,
+                    call.argument(Defines.FLUTTER_PARAM_REJECT_BUTTON_TEXT) != null
+                            ? (String) call.argument(Defines.FLUTTER_PARAM_REJECT_BUTTON_TEXT)
+                            : Defines.DEFAULT_REJECT_TEXT);
+            Boolean isVibrate = call.argument(Defines.FLUTTER_PARAM_VIBRATE);
+            extras.putBoolean(Defines.FLUTTER_PARAM_VIBRATE,
+                    isVibrate != null ? isVibrate : Defines.DEFAULT_VIBRATE);
+            Boolean isVideo = call.argument(Defines.FLUTTER_PARAM_IS_VIDEO);
+            extras.putBoolean(Defines.FLUTTER_PARAM_IS_VIDEO,
+                    isVideo != null ? isVideo : Defines.DEFAULT_IS_VIDEO);
+
+            telecomManager.addNewIncomingCall(
+                    PhoneAccountHelper.getPhoneAccountHandle(context), extras);
+            result.success(null);
+        } catch (SecurityException e) {
+            Log.e(TAG, "addNewIncomingCall SecurityException (already in call?): " + e.getMessage());
+            result.error(Defines.ERROR_PERMISSION_DENIED, e.getMessage(), null);
+        } catch (Exception e) {
+            Log.e(TAG, "addNewIncomingCall failed: " + e.getMessage());
+            result.error(Defines.ERROR_UNKNOWN, e.getMessage(), null);
+        }
+    }
+
+    private void handleEndVoipCall(Result result) {
+        notification.dismissAllNotifications(context);
+
+        if (VoipConnectionService.currentConnection != null) {
+            try {
+                VoipConnectionService.currentConnection.setDisconnected(
+                        new android.telecom.DisconnectCause(android.telecom.DisconnectCause.CANCELED));
+                VoipConnectionService.currentConnection.destroy();
+            } catch (Exception e) {
+                Log.w(TAG, "endVoipCall connection cleanup: " + e.getMessage());
+            }
+            VoipConnectionService.currentConnection = null;
+        }
+
+        broadcastManager.sendBroadcast(new Intent(Defines.ACTION_VOIP_CALL_ENDED));
+        result.success(null);
+    }
+
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
         Log.d(TAG, "onDetachedFromEngine");
@@ -270,6 +350,13 @@ public class ZegoUIKitCallPlugin extends BroadcastReceiver implements FlutterPlu
 
     private void onBroadcastCallNotificationAccepted(Intent intent) {
         Log.d(TAG, "onBroadcastCallNotificationAccepted");
+        if (VoipConnectionService.currentConnection != null) {
+            try {
+                VoipConnectionService.currentConnection.setActive();
+            } catch (Exception e) {
+                Log.w(TAG, "setActive failed: " + e.getMessage());
+            }
+        }
         if (methodChannel != null) {
             methodChannel.invokeMethod(Defines.ACTION_CALL_NOTIFICATION_ACCEPT_CB_FUNC, null);
         } else {
@@ -279,6 +366,16 @@ public class ZegoUIKitCallPlugin extends BroadcastReceiver implements FlutterPlu
 
     private void onBroadcastCallNotificationRejected(Intent intent) {
         Log.d(TAG, "onBroadcastCallNotificationRejected");
+        if (VoipConnectionService.currentConnection != null) {
+            try {
+                VoipConnectionService.currentConnection.setDisconnected(
+                        new android.telecom.DisconnectCause(android.telecom.DisconnectCause.REJECTED));
+                VoipConnectionService.currentConnection.destroy();
+            } catch (Exception e) {
+                Log.w(TAG, "reject connection cleanup: " + e.getMessage());
+            }
+            VoipConnectionService.currentConnection = null;
+        }
         if (methodChannel != null) {
             methodChannel.invokeMethod(Defines.ACTION_CALL_NOTIFICATION_REJECT_CB_FUNC, null);
         } else {

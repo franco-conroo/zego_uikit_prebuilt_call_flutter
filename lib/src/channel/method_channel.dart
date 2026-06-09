@@ -34,8 +34,13 @@ class MethodChannelZegoCallPlugin extends ZegoCallPluginPlatform {
   /// audio route changed callback
   Function(Map<dynamic, dynamic> info)? _audioRouteChangedCallback;
 
-  /// call notification config (for callback)
+  /// call notification config (for callback) — cleared after single use
   ZegoCallCallNotificationConfig? _callNotificationConfig;
+
+  /// persistent callbacks for app-running scenario (set by callkit.dart init)
+  VoidCallback? _persistentAcceptCallback;
+  VoidCallback? _persistentRejectCallback;
+  VoidCallback? _persistentCancelCallback;
 
   /// normal notification config (for callback)
   ZegoCallNormalNotificationConfig? _normalNotificationConfig;
@@ -56,16 +61,28 @@ class MethodChannelZegoCallPlugin extends ZegoCallPluginPlatform {
 
       switch (call.method) {
         case kCallNotificationAccepted:
-          _callNotificationConfig?.acceptCallback?.call();
-          _callNotificationConfig = null;
+          if (_callNotificationConfig?.acceptCallback != null) {
+            _callNotificationConfig!.acceptCallback!.call();
+            _callNotificationConfig = null;
+          } else {
+            _persistentAcceptCallback?.call();
+          }
           break;
         case kCallNotificationRejected:
-          _callNotificationConfig?.rejectCallback?.call();
-          _callNotificationConfig = null;
+          if (_callNotificationConfig?.rejectCallback != null) {
+            _callNotificationConfig!.rejectCallback!.call();
+            _callNotificationConfig = null;
+          } else {
+            _persistentRejectCallback?.call();
+          }
           break;
         case kCallNotificationCancelled:
-          _callNotificationConfig?.cancelCallback?.call();
-          _callNotificationConfig = null;
+          if (_callNotificationConfig?.cancelCallback != null) {
+            _callNotificationConfig!.cancelCallback!.call();
+            _callNotificationConfig = null;
+          } else {
+            _persistentCancelCallback?.call();
+          }
           break;
         case kCallNotificationClicked:
           _callNotificationConfig?.clickCallback?.call();
@@ -402,6 +419,77 @@ class MethodChannelZegoCallPlugin extends ZegoCallPluginPlatform {
       );
       return {};
     }
+  }
+
+  /// Trigger ConnectionService-based incoming call UI — Android only
+  @override
+  Future<void> addNewIncomingCall(ZegoCallCallNotificationConfig config) async {
+    if (Platform.isIOS) return;
+
+    ZegoLoggerService.logInfo(
+      'config:$config',
+      tag: 'call-channel',
+      subTag: 'addNewIncomingCall',
+    );
+
+    try {
+      _callNotificationConfig = config;
+      await methodChannel.invokeMethod('addNewIncomingCall', {
+        'id': config.id?.toString() ?? '1',
+        'title': config.title,
+        'content': config.content,
+        'channel_id': config.channelID,
+        'sound_source': config.soundSource ?? '',
+        'icon_source': config.iconSource ?? '',
+        'accept_text': config.acceptButtonText,
+        'reject_text': config.rejectButtonText,
+        'vibrate': config.vibrate,
+        'is_video': config.isVideo,
+      });
+    } on PlatformException catch (e) {
+      ZegoLoggerService.logError(
+        'addNewIncomingCall failed: $e.',
+        tag: 'call-channel',
+        subTag: 'addNewIncomingCall',
+      );
+    }
+  }
+
+  /// Dismiss incoming call UI and disconnect VoipConnection — Android only
+  @override
+  Future<void> endVoipCall() async {
+    if (Platform.isIOS) return;
+
+    ZegoLoggerService.logInfo(
+      'endVoipCall',
+      tag: 'call-channel',
+      subTag: 'endVoipCall',
+    );
+
+    _callNotificationConfig = null;
+
+    try {
+      await methodChannel.invokeMethod('endVoipCall');
+    } on PlatformException catch (e) {
+      ZegoLoggerService.logError(
+        'endVoipCall failed: $e.',
+        tag: 'call-channel',
+        subTag: 'endVoipCall',
+      );
+    }
+  }
+
+  /// Set persistent callbacks used when no per-call config is active — Android only
+  @override
+  void setPersistentCallNotificationCallbacks({
+    VoidCallback? onAccepted,
+    VoidCallback? onRejected,
+    VoidCallback? onCancelled,
+  }) {
+    if (Platform.isIOS) return;
+    _persistentAcceptCallback = onAccepted;
+    _persistentRejectCallback = onRejected;
+    _persistentCancelCallback = onCancelled;
   }
 
   /// set audio route changed callback

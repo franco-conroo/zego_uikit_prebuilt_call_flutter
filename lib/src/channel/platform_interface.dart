@@ -1,3 +1,6 @@
+// Flutter imports:
+import 'package:flutter/foundation.dart';
+
 // Package imports:
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
@@ -89,5 +92,26 @@ abstract class ZegoCallPluginPlatform extends PlatformInterface {
       Function(Map<dynamic, dynamic> info)? callback) {
     throw UnimplementedError(
         'setAudioRouteChangedCallback has not been implemented.');
+  }
+
+  /// addNewIncomingCall — Android only, replaces showCallkitIncoming for ConnectionService path
+  Future<void> addNewIncomingCall(ZegoCallCallNotificationConfig config) {
+    throw UnimplementedError('addNewIncomingCall has not been implemented.');
+  }
+
+  /// endVoipCall — Android only, disconnects VoipConnection + dismisses notification
+  Future<void> endVoipCall() {
+    throw UnimplementedError('endVoipCall has not been implemented.');
+  }
+
+  /// setPersistentCallNotificationCallbacks — Android only
+  /// These are called when no per-call config is active (app-running scenario)
+  void setPersistentCallNotificationCallbacks({
+    VoidCallback? onAccepted,
+    VoidCallback? onRejected,
+    VoidCallback? onCancelled,
+  }) {
+    throw UnimplementedError(
+        'setPersistentCallNotificationCallbacks has not been implemented.');
   }
 }

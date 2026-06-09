@@ -144,7 +144,13 @@ enum ZegoCallInvitationPermission {
   camera,
   microphone,
 
-  /// Not using it will cause full-screen pop-ups to fail to appear on the lock screen
+  /// @Deprecated Android now uses ConnectionService for lock-screen display.
+  /// This value is ignored on Android and has no effect.
+  // ignore: deprecated_member_use_from_same_package
+  @Deprecated(
+    'Android lock-screen calls are handled by ConnectionService. '
+    'This permission is no longer requested on Android.',
+  )
   systemAlertWindow,
 
   /// Some permissions cannot be obtained directly and must be set manually by the user

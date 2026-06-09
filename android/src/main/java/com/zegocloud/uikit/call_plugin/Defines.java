@@ -15,6 +15,8 @@ public class Defines {
     public static final String FLUTTER_API_FUNC_CREATE_NOTIFICATION_CHANNEL = "createNotificationChannel";
     public static final String FLUTTER_API_FUNC_DISMISS_NOTIFICATION = "dismissNotification";
     public static final String FLUTTER_API_FUNC_DISMISS_ALL_NOTIFICATIONS = "dismissAllNotifications";
+    public static final String FLUTTER_API_FUNC_ADD_NEW_INCOMING_CALL = "addNewIncomingCall";
+    public static final String FLUTTER_API_FUNC_END_VOIP_CALL = "endVoipCall";
 
     // Flutter 参数名
     public static final String FLUTTER_PARAM_TITLE = "title";
@@ -31,6 +33,7 @@ public class Defines {
     public static final String FLUTTER_PARAM_IS_VIDEO = "is_video";
 
     // 广播 Action
+    public static final String ACTION_VOIP_CALL_ENDED = "ACTION_VOIP_CALL_ENDED";
     public static final String ACTION_CALL_NOTIFICATION_ACCEPT = "ACTION_CALL_NOTIFICATION_ACCEPT";
     public static final String ACTION_CALL_NOTIFICATION_REJECT = "ACTION_CALL_NOTIFICATION_REJECT";
     public static final String ACTION_CALL_NOTIFICATION_CANCEL = "ACTION_CALL_NOTIFICATION_CANCEL";

@@ -26,6 +26,7 @@ import androidx.core.app.NotificationManagerCompat;
 import com.zegocloud.uikit.call_plugin.Defines;
 import com.zegocloud.uikit.call_plugin.R;
 import com.zegocloud.uikit.call_plugin.StringUtils;
+import com.zegocloud.uikit.call_plugin.voip.ZegoCallIncomingActivity;
 
 import java.util.List;
 
@@ -134,9 +135,20 @@ public class PluginNotification {
         clickIntent.setAction(Defines.ACTION_CALL_NOTIFICATION_CLICK);
         PendingIntent clickPendingIntent = PendingIntent.getBroadcast(context, 0, clickIntent, flags);
 
-        /// avoid head-up notification disappear after a few seconds
-        Intent fullscreenIntent = new Intent();
-        PendingIntent fullscreenPendingIntent = PendingIntent.getBroadcast(context, 0, fullscreenIntent, flags);
+        /// Launch full-screen incoming call Activity on lock screen
+        Intent fullscreenIntent = new Intent(context, ZegoCallIncomingActivity.class);
+        fullscreenIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        fullscreenIntent.putExtra(Defines.FLUTTER_PARAM_TITLE, title);
+        fullscreenIntent.putExtra(Defines.FLUTTER_PARAM_CONTENT, body);
+        fullscreenIntent.putExtra(Defines.FLUTTER_PARAM_IS_VIDEO, isVideo != null && isVideo);
+        fullscreenIntent.putExtra(Defines.FLUTTER_PARAM_ACCEPT_BUTTON_TEXT, acceptButtonText);
+        fullscreenIntent.putExtra(Defines.FLUTTER_PARAM_REJECT_BUTTON_TEXT, rejectButtonText);
+        fullscreenIntent.putExtra(Defines.FLUTTER_PARAM_ID, notificationIdString);
+        int activityFlags = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            activityFlags = PendingIntent.FLAG_IMMUTABLE;
+        }
+        PendingIntent fullscreenPendingIntent = PendingIntent.getActivity(context, 0, fullscreenIntent, activityFlags);
 
         /// content view
         AcceptReceiver acceptReceiver = new AcceptReceiver();

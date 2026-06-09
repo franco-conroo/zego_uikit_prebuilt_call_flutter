@@ -397,36 +397,29 @@ class ZegoCallInvitationNotificationManager {
     await cancelInvitationNotification();
 
     ZegoLoggerService.logInfo(
-      'show invitation notification, check permission...',
+      'show invitation notification',
       tag: 'call-invitation',
       subTag: 'notification manager',
     );
-    return await hasSystemAlertWindowPermission()
-        .then((bool hasPermission) async {
-      if (!hasPermission) {
-        ZegoLoggerService.logWarn(
-          'show invitation notification, '
-          'check permission done, '
-          'but has not system alert window permission, '
-          'data: $invitationData',
-          tag: 'call-invitation',
-          subTag: 'notification manager',
-        );
 
-        return false;
-      }
+    ZegoCallInvitationNotificationManager.hasInvitation = true;
 
-      ZegoLoggerService.logInfo(
-        'show invitation notification, '
-        'check permission done, '
-        'has permission, '
-        'show, data: $invitationData',
-        tag: 'call-invitation',
-        subTag: 'notification manager',
+    if (Platform.isAndroid) {
+      await ZegoCallPluginPlatform.instance.addNewIncomingCall(
+        ZegoCallCallNotificationConfig(
+          id: 1,
+          isVideo: invitationData.type == ZegoCallInvitationType.videoCall,
+          channelID: callChannelName,
+          title: (invitationData.inviter?.name.isNotEmpty ?? false)
+              ? invitationData.inviter!.name
+              : (invitationData.inviter?.id ?? ''),
+          content: '',
+          soundSource: callInvitationData.notificationConfig
+                  .androidNotificationConfig?.callChannel.sound ??
+              '',
+        ),
       );
-
-      ZegoCallInvitationNotificationManager.hasInvitation = true;
-
+    } else {
       await showCallkitIncoming(
         caller: invitationData.inviter,
         callType: invitationData.type,
@@ -440,9 +433,9 @@ class ZegoCallInvitationNotificationManager {
         iOSIconName: callInvitationData
             .notificationConfig.iOSNotificationConfig?.systemCallingIconName,
       );
+    }
 
-      return true;
-    });
+    return true;
   }
 
   static String? getIconSource(String? iconFileName) {
