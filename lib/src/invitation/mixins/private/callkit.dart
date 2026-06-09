@@ -166,7 +166,7 @@ class ZegoCallInvitationServiceCallKitPrivateImpl {
     });
   }
 
-  /// for popup top notify window if app in background — iOS only (v3.x API)
+  /// for popup top notify window if app in background — iOS only (v3.1.x API)
   Future<void> _onIOSCallKitIncomingEvent(CallEvent? event) async {
     if (!Platform.isIOS || event == null) return;
 
