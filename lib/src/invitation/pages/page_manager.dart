@@ -1316,9 +1316,13 @@ class ZegoCallInvitationPageManager {
             AppLifecycleState.inactive ==
                 WidgetsBinding.instance.lifecycleState;
 
-        if (_appInBackground || iOSCallKitBackground) {
+        final isAndroidBackground = Platform.isAndroid &&
+            WidgetsBinding.instance.lifecycleState !=
+                AppLifecycleState.resumed;
+
+        if (_appInBackground || iOSCallKitBackground || isAndroidBackground) {
           ZegoLoggerService.logInfo(
-            'app in background, app in background:$_appInBackground, iOS callkit background:$iOSCallKitBackground, create notification',
+            'app in background, app in background:$_appInBackground, iOS callkit background:$iOSCallKitBackground, android background:$isAndroidBackground, create notification',
             tag: 'call-invitation',
             subTag: 'page manager',
           );
