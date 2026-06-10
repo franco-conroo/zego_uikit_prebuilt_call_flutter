@@ -278,8 +278,10 @@ class ZegoCallAndroidCallBackgroundMessageHandler {
 
     final handlerInfoJson = await getPreferenceString(serializationKeyHandlerInfo);
     final handlerInfo = HandlerPrivateInfo.fromJsonString(handlerInfoJson);
-    final callChannelName =
-        handlerInfo?.androidCallChannelName ?? defaultCallChannelName;
+    final callChannelID =
+        handlerInfo?.androidCallChannelID.isNotEmpty == true
+            ? handlerInfo!.androidCallChannelID
+            : defaultCallChannelKey;
 
     final signalingSubscriptions = <StreamSubscription<dynamic>>[];
     _listenSignalingEvents(signalingSubscriptions, message: message);
@@ -320,9 +322,8 @@ class ZegoCallAndroidCallBackgroundMessageHandler {
 
       await ZegoCallPluginPlatform.instance.addNewIncomingCall(
         ZegoCallCallNotificationConfig(
-          id: 1,
           isVideo: message.callType == ZegoCallInvitationType.videoCall,
-          channelID: callChannelName,
+          channelID: callChannelID,
           title: message.extras['title'] as String? ?? '',
           content: message.extras['body'] as String? ?? '',
           acceptCallback: () async {

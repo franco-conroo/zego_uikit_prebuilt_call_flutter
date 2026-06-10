@@ -29,6 +29,8 @@ public class VoipConnectionService extends ConnectionService {
         currentConnection = connection;
 
         Bundle extras = request.getExtras();
+
+        // Post the notification for the heads-up banner and notification shade buttons.
         new PluginNotification().showCallNotification(
                 getApplicationContext(),
                 extras.getString(Defines.FLUTTER_PARAM_TITLE, ""),
@@ -42,6 +44,20 @@ public class VoipConnectionService extends ConnectionService {
                 extras.getBoolean(Defines.FLUTTER_PARAM_VIBRATE, Defines.DEFAULT_VIBRATE),
                 extras.getBoolean(Defines.FLUTTER_PARAM_IS_VIDEO, Defines.DEFAULT_IS_VIDEO)
         );
+
+        // Directly start the incoming call Activity. The Telecom system grants a temporary
+        // background activity start token when onCreateIncomingConnection() fires, so this
+        // works on the lock screen without USE_FULL_SCREEN_INTENT being user-granted.
+        // ZegoCallIncomingActivity is singleInstance so a second launch (from setFullScreenIntent)
+        // is a no-op.
+        try {
+            Intent activityIntent = new Intent(getApplicationContext(), ZegoCallIncomingActivity.class);
+            activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            activityIntent.putExtras(extras);
+            getApplicationContext().startActivity(activityIntent);
+        } catch (Exception e) {
+            Log.w(TAG, "startActivity for incoming call failed: " + e.getMessage());
+        }
 
         return connection;
     }

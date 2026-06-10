@@ -407,9 +407,9 @@ class ZegoCallInvitationNotificationManager {
     if (Platform.isAndroid) {
       await ZegoCallPluginPlatform.instance.addNewIncomingCall(
         ZegoCallCallNotificationConfig(
-          id: 1,
+          id: _callInvitationNotificationID,
           isVideo: invitationData.type == ZegoCallInvitationType.videoCall,
-          channelID: callChannelName,
+          channelID: callChannelKey,
           title: (invitationData.inviter?.name.isNotEmpty ?? false)
               ? invitationData.inviter!.name
               : (invitationData.inviter?.id ?? ''),
