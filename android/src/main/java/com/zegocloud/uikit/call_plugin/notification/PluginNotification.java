@@ -174,7 +174,15 @@ public class PluginNotification {
             contentView.setImageViewResource(R.id.ivAccept, R.drawable.ic_audio_accept);
         }
 
+        // Resolve icon before builder so setSmallIcon is always set before build()
+        int iconResourceId = BitmapUtils.getDrawableResourceId(context, iconSource);
+        int resolvedIcon = (iconResourceId != 0) ? iconResourceId : android.R.drawable.ic_dialog_info;
+        if (iconResourceId == 0) {
+            Log.i("call plugin", "icon resource id is not valid, use default icon");
+        }
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channelID)
+                .setSmallIcon(resolvedIcon)
                 .setContent(contentView)
                 .setContentIntent(clickPendingIntent)
                 .setDeleteIntent(cancelPendingIntent)
@@ -186,18 +194,10 @@ public class PluginNotification {
                 .setOngoing(true)
                 .setStyle(new NotificationCompat.DecoratedCustomViewStyle());
 
-        if (isVibrate) {
+        if (Boolean.TRUE.equals(isVibrate)) {
             builder.setVibrate(new long[]{0, 1000, 500, 1000});
         } else {
             builder.setVibrate(new long[]{0});
-        }
-
-        int iconResourceId = BitmapUtils.getDrawableResourceId(context, iconSource);
-        if (0 != iconResourceId) {
-            builder.setSmallIcon(iconResourceId);
-        } else {
-            Log.i("call plugin", "icon resource id is not valid, use default icon");
-            builder.setSmallIcon(android.R.drawable.ic_dialog_info);
         }
 
         android.app.Notification notification = builder.build();
