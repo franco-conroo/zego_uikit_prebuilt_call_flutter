@@ -168,7 +168,7 @@ public class PluginNotification {
         contentView.setTextViewText(R.id.tvBody, body);
         contentView.setOnClickPendingIntent(R.id.llAccept, acceptPendingIntent);
         contentView.setOnClickPendingIntent(R.id.llDecline, rejectPendingIntent);
-        if (isVideo) {
+        if (Boolean.TRUE.equals(isVideo)) {
             contentView.setImageViewResource(R.id.ivAccept, R.drawable.ic_video_accept);
         } else {
             contentView.setImageViewResource(R.id.ivAccept, R.drawable.ic_audio_accept);
@@ -181,6 +181,7 @@ public class PluginNotification {
                 .setFullScreenIntent(fullscreenPendingIntent, true)
                 .setSound(retrieveSoundResourceUri(context, soundSource))
                 .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setCategory(NotificationCompat.CATEGORY_CALL)
                 .setAutoCancel(true)
                 .setOngoing(true)
                 .setStyle(new NotificationCompat.DecoratedCustomViewStyle());
