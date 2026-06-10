@@ -80,7 +80,7 @@ public class PluginNotification {
                 .setOngoing(false)
                 .setStyle(new NotificationCompat.DecoratedCustomViewStyle());
 
-        if (isVibrate) {
+        if (Boolean.TRUE.equals(isVibrate)) {
             builder.setVibrate(new long[]{0, 1000, 500, 1000});
         } else {
             builder.setVibrate(new long[]{0});

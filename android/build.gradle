@@ -27,7 +27,7 @@ android {
         namespace 'com.zegocloud.uikit.call_plugin'
     }
 
-    compileSdkVersion 31
+    compileSdkVersion 34
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8

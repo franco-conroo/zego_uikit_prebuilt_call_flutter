@@ -357,6 +357,10 @@ public class ZegoUIKitCallPlugin extends BroadcastReceiver implements FlutterPlu
                 Log.w(TAG, "setActive failed: " + e.getMessage());
             }
         }
+        // Dismiss ongoing notification (setAutoCancel has no effect on ongoing notifications)
+        notification.dismissAllNotifications(context);
+        // Dismiss ZegoCallIncomingActivity in case it was answered via Bluetooth/headset
+        broadcastManager.sendBroadcast(new Intent(Defines.ACTION_VOIP_CALL_ENDED));
         if (methodChannel != null) {
             methodChannel.invokeMethod(Defines.ACTION_CALL_NOTIFICATION_ACCEPT_CB_FUNC, null);
         } else {
@@ -376,6 +380,8 @@ public class ZegoUIKitCallPlugin extends BroadcastReceiver implements FlutterPlu
             }
             VoipConnectionService.currentConnection = null;
         }
+        // Dismiss ongoing notification
+        notification.dismissAllNotifications(context);
         if (methodChannel != null) {
             methodChannel.invokeMethod(Defines.ACTION_CALL_NOTIFICATION_REJECT_CB_FUNC, null);
         } else {
