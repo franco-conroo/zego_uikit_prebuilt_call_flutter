@@ -14,6 +14,7 @@ class ZegoCallCallNotificationConfig {
     required this.channelID,
     required this.title,
     required this.content,
+    this.avatarUrl,
     this.acceptCallback,
     this.rejectCallback,
     this.cancelCallback,
@@ -28,6 +29,8 @@ class ZegoCallCallNotificationConfig {
   final String channelID;
   final String title;
   final String content;
+  /// Optional URL for the caller avatar shown in ZegoCallIncomingActivity.
+  final String? avatarUrl;
   final String acceptButtonText;
   final String rejectButtonText;
   final VoidCallback? acceptCallback;

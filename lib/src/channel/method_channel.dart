@@ -445,6 +445,7 @@ class MethodChannelZegoCallPlugin extends ZegoCallPluginPlatform {
         'reject_text': config.rejectButtonText,
         'vibrate': config.vibrate,
         'is_video': config.isVideo,
+        'caller_avatar_url': config.avatarUrl ?? '',
       });
     } on PlatformException catch (e) {
       ZegoLoggerService.logError(

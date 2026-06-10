@@ -247,6 +247,9 @@ public class ZegoUIKitCallPlugin extends BroadcastReceiver implements FlutterPlu
             Boolean isVideo = call.argument(Defines.FLUTTER_PARAM_IS_VIDEO);
             extras.putBoolean(Defines.FLUTTER_PARAM_IS_VIDEO,
                     isVideo != null ? isVideo : Defines.DEFAULT_IS_VIDEO);
+            String avatarUrl = call.argument(Defines.FLUTTER_PARAM_CALLER_AVATAR_URL);
+            extras.putString(Defines.FLUTTER_PARAM_CALLER_AVATAR_URL,
+                    avatarUrl != null ? avatarUrl : "");
 
             telecomManager.addNewIncomingCall(
                     PhoneAccountHelper.getPhoneAccountHandle(context), extras);

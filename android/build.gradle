@@ -1,6 +1,3 @@
-group 'com.zegocloud.uikit.call_plugin'
-version '1.0'
-
 buildscript {
     repositories {
         google()
@@ -8,16 +5,19 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.0'
+        classpath 'com.android.tools.build:gradle:9.2.1'
     }
 }
 
-rootProject.allprojects {
+allprojects {
     repositories {
         google()
         mavenCentral()
     }
 }
+
+group 'com.zegocloud.uikit.call_plugin'
+version '1.0'
 
 apply plugin: 'com.android.library'
 
@@ -43,4 +43,5 @@ android {
 dependencies {
     implementation "androidx.core:core:1.7.0"
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
 }

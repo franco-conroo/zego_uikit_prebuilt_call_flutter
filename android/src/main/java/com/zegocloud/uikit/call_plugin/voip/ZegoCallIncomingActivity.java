@@ -11,6 +11,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.util.Log;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.CircleCrop;
+
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.zegocloud.uikit.call_plugin.Defines;
@@ -36,12 +39,14 @@ public class ZegoCallIncomingActivity extends Activity {
         boolean isVideo = intent.getBooleanExtra(Defines.FLUTTER_PARAM_IS_VIDEO, false);
         String acceptText = intent.getStringExtra(Defines.FLUTTER_PARAM_ACCEPT_BUTTON_TEXT);
         String rejectText = intent.getStringExtra(Defines.FLUTTER_PARAM_REJECT_BUTTON_TEXT);
+        String avatarUrl = intent.getStringExtra(Defines.FLUTTER_PARAM_CALLER_AVATAR_URL);
 
         TextView tvTitle = findViewById(R.id.tvCallerName);
         TextView tvContent = findViewById(R.id.tvCallType);
         TextView tvAccept = findViewById(R.id.tvAcceptBtn);
         TextView tvReject = findViewById(R.id.tvRejectBtn);
         ImageView ivAccept = findViewById(R.id.ivAcceptIcon);
+        ImageView ivAvatar = findViewById(R.id.imageView);
 
         if (tvTitle != null && title != null) tvTitle.setText(title);
         if (tvContent != null && content != null) tvContent.setText(content);
@@ -49,6 +54,16 @@ public class ZegoCallIncomingActivity extends Activity {
         if (tvReject != null && rejectText != null) tvReject.setText(rejectText);
         if (ivAccept != null) {
             ivAccept.setImageResource(isVideo ? R.drawable.ic_video_accept : R.drawable.ic_audio_accept);
+        }
+        if (ivAvatar != null) {
+            if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                Glide.with(this)
+                        .load(avatarUrl)
+                        .transform(new CircleCrop())
+                        .placeholder(android.R.drawable.ic_menu_myplaces)
+                        .error(android.R.drawable.ic_menu_myplaces)
+                        .into(ivAvatar);
+            }
         }
 
         LinearLayout llAccept = findViewById(R.id.llAcceptBtn);

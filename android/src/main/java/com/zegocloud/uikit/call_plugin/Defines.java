@@ -31,6 +31,7 @@ public class Defines {
     public static final String FLUTTER_PARAM_NOTIFICATION_ID = "notification_id";
     public static final String FLUTTER_PARAM_VIBRATE = "vibrate";
     public static final String FLUTTER_PARAM_IS_VIDEO = "is_video";
+    public static final String FLUTTER_PARAM_CALLER_AVATAR_URL = "caller_avatar_url";
 
     // 广播 Action
     public static final String ACTION_VOIP_CALL_ENDED = "ACTION_VOIP_CALL_ENDED";
