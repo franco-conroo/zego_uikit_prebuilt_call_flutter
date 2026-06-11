@@ -191,8 +191,7 @@ public class PluginNotification {
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_CALL)
                 .setAutoCancel(true)
-                .setOngoing(true)
-                .setStyle(new NotificationCompat.DecoratedCustomViewStyle());
+                .setOngoing(true);
 
         if (Boolean.TRUE.equals(isVibrate)) {
             builder.setVibrate(new long[]{0, 1000, 500, 1000});

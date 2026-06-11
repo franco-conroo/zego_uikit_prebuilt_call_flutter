@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -47,6 +48,7 @@ public class ZegoCallIncomingActivity extends Activity {
         TextView tvReject = findViewById(R.id.tvRejectBtn);
         ImageView ivAccept = findViewById(R.id.ivAcceptIcon);
         ImageView ivAvatar = findViewById(R.id.imageView);
+        ImageView ivAppLogo = findViewById(R.id.ivAppLogo);
 
         if (tvTitle != null && title != null) tvTitle.setText(title);
         if (tvContent != null && content != null) tvContent.setText(content);
@@ -55,14 +57,32 @@ public class ZegoCallIncomingActivity extends Activity {
         if (ivAccept != null) {
             ivAccept.setImageResource(isVideo ? R.drawable.ic_video_accept : R.drawable.ic_audio_accept);
         }
-        if (ivAvatar != null) {
-            if (avatarUrl != null && !avatarUrl.isEmpty()) {
+
+        if (ivAvatar != null && avatarUrl != null && !avatarUrl.isEmpty()) {
+            Glide.with(this)
+                    .load(avatarUrl)
+                    .transform(new CircleCrop())
+                    .placeholder(R.drawable.ic_person_placeholder)
+                    .error(R.drawable.ic_person_placeholder)
+                    .into(ivAvatar);
+        }
+
+        // Load the app's logo from the host app; try a custom override first,
+        // then fall back to the launcher icons that every app ships.
+        if (ivAppLogo != null) {
+            int logoResId = getResources().getIdentifier("ic_app_logo", "drawable", getPackageName());
+            if (logoResId == 0) {
+                logoResId = getResources().getIdentifier("ic_launcher_round", "mipmap", getPackageName());
+            }
+            if (logoResId == 0) {
+                logoResId = getResources().getIdentifier("ic_launcher", "mipmap", getPackageName());
+            }
+            if (logoResId != 0) {
                 Glide.with(this)
-                        .load(avatarUrl)
+                        .load(logoResId)
                         .transform(new CircleCrop())
-                        .placeholder(android.R.drawable.ic_menu_myplaces)
-                        .error(android.R.drawable.ic_menu_myplaces)
-                        .into(ivAvatar);
+                        .into(ivAppLogo);
+                ivAppLogo.setVisibility(View.VISIBLE);
             }
         }
 
